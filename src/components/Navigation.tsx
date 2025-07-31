@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Calendar,
   Bell,
@@ -13,11 +14,13 @@ import {
   Sparkles,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 
 const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { logout, user } = useAuth();
 
   const navigationItems = [
     { path: "/", label: "Dashboard", icon: BarChart3 },
@@ -71,8 +74,17 @@ const Navigation = () => {
                 <Sparkles className="w-3 h-3 mr-1" />
                 AI Powered
               </Badge>
-              <Button variant="outline" size="sm">
-                Sign In
+              <span className="text-sm text-muted-foreground hidden lg:inline">
+                {user?.email}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={logout}
+                className="flex items-center space-x-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden lg:inline">Logout</span>
               </Button>
             </div>
           </div>
@@ -129,9 +141,18 @@ const Navigation = () => {
                   );
                 })}
               </div>
-              <div className="mt-4 pt-4 border-t border-border">
-                <Button variant="outline" size="sm" className="w-full">
-                  Sign In
+              <div className="mt-4 pt-4 border-t border-border space-y-3">
+                <div className="text-sm text-muted-foreground px-2">
+                  {user?.email}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={logout}
+                  className="w-full flex items-center space-x-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
                 </Button>
               </div>
             </div>
