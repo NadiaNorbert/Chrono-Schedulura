@@ -25,6 +25,7 @@ const Navigation = () => {
   const navigationItems = [
     { path: "/", label: "Dashboard", icon: BarChart3 },
     { path: "/scheduler", label: "Smart Scheduler", icon: Calendar },
+    { path: "/calendar", label: "Calendar View", icon: Calendar },
     { path: "/reminders", label: "Reminders", icon: Bell },
     { path: "/wellness", label: "Wellness & Break", icon: Heart },
     { path: "/health", label: "Health Companion", icon: Activity },

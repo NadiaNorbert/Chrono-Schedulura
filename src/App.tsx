@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import SmartScheduler from "./pages/SmartScheduler";
+import CalendarView from "./pages/CalendarView";
 import Reminders from "./pages/Reminders";
 import Wellness from "./pages/Wellness";
 import Health from "./pages/Health";
@@ -38,6 +39,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/scheduler" element={<SmartScheduler />} />
+      <Route path="/calendar" element={<CalendarView />} />
       <Route path="/reminders" element={<Reminders />} />
       <Route path="/wellness" element={<Wellness />} />
       <Route path="/health" element={<Health />} />

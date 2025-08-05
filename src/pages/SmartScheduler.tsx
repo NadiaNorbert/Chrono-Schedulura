@@ -10,11 +10,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { 
   Send, 
   Mic, 
   Paperclip, 
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   CheckSquare,
   Plus,
@@ -28,6 +32,7 @@ interface Task {
   completed: boolean;
   priority: 'low' | 'medium' | 'high';
   category: 'daily' | 'weekly' | 'monthly';
+  dueDate?: Date;
   createdAt: Date;
 }
 
@@ -40,6 +45,7 @@ const SmartScheduler = () => {
     description: string;
     priority: 'low' | 'medium' | 'high';
     category: 'daily' | 'weekly' | 'monthly';
+    dueDate?: Date;
   }>({
     title: "",
     description: "",
@@ -78,6 +84,7 @@ const SmartScheduler = () => {
         completed: false,
         priority: newTask.priority,
         category: newTask.category,
+        dueDate: newTask.dueDate,
         createdAt: new Date()
       };
       setTasks([...tasks, task]);
@@ -85,7 +92,8 @@ const SmartScheduler = () => {
         title: "",
         description: "",
         priority: "medium",
-        category: "daily"
+        category: "daily",
+        dueDate: undefined
       });
       setIsDialogOpen(false);
     }
@@ -125,7 +133,7 @@ const SmartScheduler = () => {
               <Card className="h-[600px] flex flex-col">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center space-x-2">
-                    <Calendar className="w-5 h-5" />
+                    <CalendarIcon className="w-5 h-5" />
                     <span>AI Assistant</span>
                   </CardTitle>
                 </CardHeader>
@@ -256,6 +264,52 @@ const SmartScheduler = () => {
                               </Select>
                             </div>
                           </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="dueDate">Due Date (Optional)</Label>
+                            <div className="flex space-x-2">
+                              <Button
+                                type="button"
+                                variant={newTask.dueDate && newTask.dueDate.toDateString() === new Date().toDateString() ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setNewTask({...newTask, dueDate: new Date()})}
+                              >
+                                Today
+                              </Button>
+                              <Button
+                                type="button"
+                                variant={newTask.dueDate && newTask.dueDate.toDateString() === new Date(Date.now() + 24*60*60*1000).toDateString() ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => {
+                                  const tomorrow = new Date();
+                                  tomorrow.setDate(tomorrow.getDate() + 1);
+                                  setNewTask({...newTask, dueDate: tomorrow});
+                                }}
+                              >
+                                Tomorrow
+                              </Button>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={cn("font-normal", !newTask.dueDate && "text-muted-foreground")}
+                                  >
+                                    <CalendarIcon className="w-4 h-4 mr-1" />
+                                    {newTask.dueDate ? format(newTask.dueDate, "MMM dd") : "Pick date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={newTask.dueDate}
+                                    onSelect={(date) => setNewTask({...newTask, dueDate: date})}
+                                    initialFocus
+                                    className={cn("p-3 pointer-events-auto")}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          </div>
                         </div>
                         <div className="flex justify-end space-x-2">
                           <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -300,7 +354,7 @@ const SmartScheduler = () => {
                                   </Badge>
                                   <span className="text-xs text-muted-foreground flex items-center">
                                     <Clock className="w-3 h-3 mr-1" />
-                                    {task.createdAt.toLocaleDateString()}
+                                    {task.dueDate ? format(task.dueDate, "MMM dd") : format(task.createdAt, "MMM dd")}
                                   </span>
                                 </div>
                               </div>
@@ -312,7 +366,7 @@ const SmartScheduler = () => {
                           
                           {filterTasksByCategory(category).length === 0 && (
                             <div className="text-center py-8 text-muted-foreground">
-                              <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                              <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
                               <p>No {category} tasks yet</p>
                               <p className="text-sm">Add some tasks using the AI assistant!</p>
                             </div>
