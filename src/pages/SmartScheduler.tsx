@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Send, 
   Mic, 
@@ -20,6 +24,7 @@ import {
 interface Task {
   id: string;
   title: string;
+  description?: string;
   completed: boolean;
   priority: 'low' | 'medium' | 'high';
   category: 'daily' | 'weekly' | 'monthly';
@@ -29,6 +34,18 @@ interface Task {
 const SmartScheduler = () => {
   const [message, setMessage] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newTask, setNewTask] = useState<{
+    title: string;
+    description: string;
+    priority: 'low' | 'medium' | 'high';
+    category: 'daily' | 'weekly' | 'monthly';
+  }>({
+    title: "",
+    description: "",
+    priority: "medium",
+    category: "daily"
+  });
   const [tasks, setTasks] = useState<Task[]>([
     { id: '1', title: 'Morning workout', completed: false, priority: 'high', category: 'daily', createdAt: new Date() },
     { id: '2', title: 'Team meeting review', completed: true, priority: 'medium', category: 'daily', createdAt: new Date() },
@@ -39,7 +56,7 @@ const SmartScheduler = () => {
   const handleSendMessage = () => {
     if (message.trim()) {
       // Add new task from message
-      const newTask: Task = {
+      const taskFromMessage: Task = {
         id: Date.now().toString(),
         title: message,
         completed: false,
@@ -47,8 +64,30 @@ const SmartScheduler = () => {
         category: 'daily',
         createdAt: new Date()
       };
-      setTasks([...tasks, newTask]);
+      setTasks([...tasks, taskFromMessage]);
       setMessage("");
+    }
+  };
+
+  const handleAddTask = () => {
+    if (newTask.title.trim()) {
+      const task: Task = {
+        id: Date.now().toString(),
+        title: newTask.title,
+        description: newTask.description,
+        completed: false,
+        priority: newTask.priority,
+        category: newTask.category,
+        createdAt: new Date()
+      };
+      setTasks([...tasks, task]);
+      setNewTask({
+        title: "",
+        description: "",
+        priority: "medium",
+        category: "daily"
+      });
+      setIsDialogOpen(false);
     }
   };
 
@@ -149,10 +188,85 @@ const SmartScheduler = () => {
                       <CheckSquare className="w-5 h-5" />
                       <span>Task Organization</span>
                     </div>
-                    <Button size="sm" variant="outline">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Task
-                    </Button>
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Task
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Add New Task</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="title">Title</Label>
+                            <Input
+                              id="title"
+                              placeholder="Enter task title..."
+                              value={newTask.title}
+                              onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="description">Description (Optional)</Label>
+                            <Textarea
+                              id="description"
+                              placeholder="Enter task description..."
+                              value={newTask.description}
+                              onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="priority">Priority</Label>
+                              <Select
+                                value={newTask.priority}
+                                onValueChange={(value: "low" | "medium" | "high") => 
+                                  setNewTask({...newTask, priority: value})
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="low">Low</SelectItem>
+                                  <SelectItem value="medium">Medium</SelectItem>
+                                  <SelectItem value="high">High</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="category">Category</Label>
+                              <Select
+                                value={newTask.category}
+                                onValueChange={(value: "daily" | "weekly" | "monthly") => 
+                                  setNewTask({...newTask, category: value})
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="daily">Daily</SelectItem>
+                                  <SelectItem value="weekly">Weekly</SelectItem>
+                                  <SelectItem value="monthly">Monthly</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={handleAddTask}>
+                            Add Task
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
