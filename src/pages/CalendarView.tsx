@@ -151,47 +151,69 @@ const CalendarView = () => {
                 </CardHeader>
                 <CardContent>
                   {view === 'month' ? (
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      className="rounded-md border w-full pointer-events-auto"
-                      components={{
-                        Day: ({ date, ...props }) => {
-                          const tasksForDate = getTasksForDate(date);
-                          return (
-                            <div className="relative w-full h-full">
-                              <button
-                                {...props}
-                                className={cn(
-                                  "w-full h-full p-0 font-normal aria-selected:opacity-100 min-h-[2.5rem]",
-                                  isSameDay(date, selectedDate) && "bg-primary text-primary-foreground",
-                                  isSameDay(date, new Date()) && !isSameDay(date, selectedDate) && "bg-accent",
-                                  "hover:bg-accent hover:text-accent-foreground"
-                                )}
-                              >
-                                <div className="flex flex-col items-center justify-center h-full">
-                                  <span className="text-sm">{format(date, 'd')}</span>
+                    <div className="w-full">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => date && setSelectedDate(date)}
+                        className="w-full pointer-events-auto"
+                        classNames={{
+                          months: "flex w-full flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                          month: "space-y-4 w-full",
+                          caption: "flex justify-center pt-1 relative items-center",
+                          caption_label: "text-sm font-medium",
+                          nav: "space-x-1 flex items-center",
+                          nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                          nav_button_previous: "absolute left-1",
+                          nav_button_next: "absolute right-1",
+                          table: "w-full border-collapse space-y-1",
+                          head_row: "flex w-full",
+                          head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] flex-1 text-center",
+                          row: "flex w-full mt-2",
+                          cell: "text-center text-sm relative p-0 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 flex-1 h-16",
+                          day: "h-full w-full p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                          day_today: "bg-accent text-accent-foreground",
+                          day_outside: "text-muted-foreground opacity-50",
+                          day_disabled: "text-muted-foreground opacity-50",
+                          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                          day_hidden: "invisible",
+                        }}
+                        components={{
+                          Day: ({ date, ...props }) => {
+                            const tasksForDate = getTasksForDate(date);
+                            return (
+                              <div className="relative w-full h-full">
+                                <button
+                                  {...props}
+                                  className={cn(
+                                    "w-full h-full p-1 font-normal aria-selected:opacity-100 flex flex-col items-center justify-start",
+                                    isSameDay(date, selectedDate) && "bg-primary text-primary-foreground",
+                                    isSameDay(date, new Date()) && !isSameDay(date, selectedDate) && "bg-accent",
+                                    "hover:bg-accent hover:text-accent-foreground transition-colors"
+                                  )}
+                                >
+                                  <span className="text-sm font-medium mb-1">{format(date, 'd')}</span>
                                   {tasksForDate.length > 0 && (
-                                    <div className="flex space-x-1 mt-1">
-                                      {tasksForDate.slice(0, 3).map((task, index) => (
+                                    <div className="flex flex-wrap gap-0.5 justify-center max-w-full">
+                                      {tasksForDate.slice(0, 2).map((task, index) => (
                                         <div
                                           key={index}
-                                          className={cn("w-1.5 h-1.5 rounded-full", getPriorityColor(task.priority))}
+                                          className={cn("w-1 h-1 rounded-full", getPriorityColor(task.priority))}
                                         />
                                       ))}
-                                      {tasksForDate.length > 3 && (
-                                        <span className="text-xs">+{tasksForDate.length - 3}</span>
+                                      {tasksForDate.length > 2 && (
+                                        <span className="text-[0.6rem] text-muted-foreground">+{tasksForDate.length - 2}</span>
                                       )}
                                     </div>
                                   )}
-                                </div>
-                              </button>
-                            </div>
-                          );
-                        }
-                      }}
-                    />
+                                </button>
+                              </div>
+                            );
+                          }
+                        }}
+                      />
+                    </div>
                   ) : (
                     <div>
                       <div className="flex items-center justify-between mb-4">
