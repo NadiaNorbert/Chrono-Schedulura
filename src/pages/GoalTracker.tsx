@@ -11,6 +11,7 @@ import { GoalShareDialog } from "@/components/goals/GoalShareDialog";
 import { GoalCard } from "@/components/goals/GoalCard";
 import GoalFormModal from "@/components/goals/GoalFormModal";
 import { useToast } from "@/hooks/use-toast";
+import GoalSummarySection from "@/components/goals/GoalSummarySection";
 
 export default function GoalTrackerPage() {
   const { data: goals, loading, error, refetch } = useApi<Goal[]>(() => apiClient.getGoals(), []);
