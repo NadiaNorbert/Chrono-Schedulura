@@ -18,9 +18,11 @@ import {
   Heart,
   MessageCircle
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,7 +52,9 @@ const Index = () => {
             {/* Left Column - Main Widgets */}
             <div className="lg:col-span-2 space-y-6">
               {/* Goal Tracking - Full Width */}
-              <GoalTrackingWidget />
+              <div role="button" tabIndex={0} onClick={() => navigate('/goal-tracker')} onKeyDown={(e) => e.key==='Enter' && navigate('/goal-tracker')} className="outline-none focus:ring-2 focus:ring-primary/40 rounded-lg cursor-pointer">
+                <GoalTrackingWidget />
+              </div>
               
               {/* Quick Actions */}
               <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
@@ -62,19 +66,19 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <Button variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
+                    <Button onClick={() => navigate('/scheduler')} variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
                       <Calendar className="w-4 h-4" />
                       <span className="text-xs">Schedule</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
+                    <Button onClick={() => navigate('/reminders')} variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
                       <Bell className="w-4 h-4" />
                       <span className="text-xs">Remind</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
+                    <Button onClick={() => navigate('/wellness')} variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
                       <Heart className="w-4 h-4" />
                       <span className="text-xs">Wellness</span>
                     </Button>
-                    <Button variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
+                    <Button onClick={() => navigate('/health')} variant="outline" size="sm" className="flex flex-col items-center space-y-1 h-auto py-3">
                       <Activity className="w-4 h-4" />
                       <span className="text-xs">Health</span>
                     </Button>
@@ -85,14 +89,18 @@ const Index = () => {
 
             {/* Right Column - Side Widgets */}
             <div className="space-y-6">
-              <EnergyLevelWidget />
-              <AIMotivatorWidget />
+              <div role="button" tabIndex={0} onClick={() => navigate('/wellness')} onKeyDown={(e) => e.key==='Enter' && navigate('/wellness')} className="outline-none focus:ring-2 focus:ring-primary/40 rounded-lg cursor-pointer">
+                <EnergyLevelWidget />
+              </div>
+              <div role="button" tabIndex={0} onClick={() => navigate('/chat')} onKeyDown={(e) => e.key==='Enter' && navigate('/chat')} className="outline-none focus:ring-2 focus:ring-primary/40 rounded-lg cursor-pointer">
+                <AIMotivatorWidget />
+              </div>
             </div>
           </div>
 
           {/* Bottom Row - Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
+            <Card onClick={() => navigate('/scheduler')} className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <Calendar className="w-5 h-5 text-primary" />
@@ -103,7 +111,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
+            <Card onClick={() => navigate('/reminders')} className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <Bell className="w-5 h-5 text-secondary" />
@@ -114,7 +122,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
+            <Card onClick={() => navigate('/wellness')} className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <Heart className="w-5 h-5 text-wellness-mental" />
@@ -125,7 +133,7 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
+            <Card onClick={() => navigate('/health')} className="group hover:shadow-glow transition-all duration-300 cursor-pointer">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <Activity className="w-5 h-5 text-wellness-physical" />

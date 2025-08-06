@@ -67,12 +67,12 @@ const Wellness = () => {
     { label: "Screen Balance", value: Math.max(0, 100 - Math.round((usageTime[0] / 10) * 100)), color: "bg-accent", icon: Clock },
   ];
 
-  const activities = [
+  const [activities, setActivities] = useState([
     { id: 'meditation', name: 'Meditation', icon: Flower2, duration: '10 min', description: 'Mindfulness breathing exercise' },
     { id: 'stretching', name: 'Stretching', icon: Move, duration: '15 min', description: 'Full body stretch routine' },
     { id: 'journaling', name: 'Journaling', icon: BookOpen, duration: '20 min', description: 'Reflective writing session' },
     { id: 'breathing', name: 'Deep Breathing', icon: Heart, duration: '5 min', description: 'Stress relief breathing' },
-  ];
+  ] as Array<{ id: string; name: string; icon: any; duration: string; description: string }>);
 
   const startActivity = (activityId: string) => {
     setCurrentActivity(activityId);
@@ -224,7 +224,28 @@ const Wellness = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {activities.map((activity) => (
+                  {/* Add Activity */}
+                  <div className="p-3 rounded-md border bg-muted/20">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <Input placeholder="Activity name" onChange={(e) => (e.target as any)._name = e.target.value} />
+                      <Input placeholder="Duration (e.g., 10 min)" onChange={(e) => (e.target as any)._duration = e.target.value} />
+                      <div className="flex gap-2">
+                        <Input placeholder="Short description" className="flex-1" onChange={(e) => (e.target as any)._desc = e.target.value} />
+                        <Button size="sm" onClick={(e) => {
+                          const wrap = e.currentTarget.parentElement?.parentElement;
+                          const inputs = wrap?.querySelectorAll('input');
+                          const [n, d, s] = Array.from(inputs || []) as any[];
+                          const name = n?._name || '';
+                          const duration = d?._duration || '';
+                          const description = s?._desc || '';
+                          if (!name) return;
+                          setActivities(prev => [...prev, { id: `${Date.now()}`, name, icon: Heart, duration: duration || '10 min', description: description || '' }]);
+                        }}>Add</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {activities.map((activity, idx) => (
                     <div 
                       key={activity.id}
                       className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-card to-muted/20 hover:from-primary/5 hover:to-secondary/5 transition-all"
@@ -234,19 +255,24 @@ const Wellness = () => {
                           <activity.icon className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-sm">{activity.name}</h3>
-                          <p className="text-xs text-muted-foreground">{activity.description}</p>
-                          <Badge variant="outline" className="text-xs mt-1">{activity.duration}</Badge>
+                          <Input value={activity.name} onChange={(e) => setActivities(prev => prev.map((a, i) => i===idx ? { ...a, name: e.target.value } : a))} className="h-8 mb-1" />
+                          <div className="flex gap-2">
+                            <Input value={activity.duration} onChange={(e) => setActivities(prev => prev.map((a, i) => i===idx ? { ...a, duration: e.target.value } : a))} className="h-8 w-28" />
+                            <Input value={activity.description} onChange={(e) => setActivities(prev => prev.map((a, i) => i===idx ? { ...a, description: e.target.value } : a))} className="h-8 flex-1" />
+                          </div>
                         </div>
                       </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => startActivity(activity.id)}
-                        disabled={currentActivity === activity.id}
-                        variant={currentActivity === activity.id ? "secondary" : "outline"}
-                      >
-                        {currentActivity === activity.id ? "Active..." : "Start"}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => startActivity(activity.id)}
+                          disabled={currentActivity === activity.id}
+                          variant={currentActivity === activity.id ? "secondary" : "outline"}
+                        >
+                          {currentActivity === activity.id ? "Active..." : "Start"}
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => setActivities(prev => prev.filter((_, i) => i!==idx))}>Remove</Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -264,6 +290,25 @@ const Wellness = () => {
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Weekly Stats */}
+            <Card className="mt-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Weekly Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <div key={i} className="flex flex-col items-center">
+                      <div className="w-6 h-20 bg-muted rounded-full overflow-hidden flex items-end">
+                        <div className="w-full bg-primary" style={{ height: `${Math.min(100, Math.max(10, Math.round(mentalHealth[0] * 10 - i*3)))}%` }} />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground mt-1">{['S','M','T','W','T','F','S'][i]}</span>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>

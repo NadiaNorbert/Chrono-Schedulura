@@ -11,11 +11,15 @@ interface GoalCardProps {
   goal: Goal;
   onShare: () => void;
   onView?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function GoalCard({ goal, onShare, onView }: GoalCardProps) {
+export function GoalCard({ goal, onShare, onView, onEdit, onDelete }: GoalCardProps) {
   const meta = getGoalMeta(goal.id) || { category: "general", isPublic: true };
   const progress = Math.min(100, Math.round((goal.current_value / Math.max(goal.target_value, 1)) * 100));
+  const startIso = (getGoalMeta(goal.id)?.startDate) || goal.created_at;
+  const endIso = goal.deadline || undefined;
 
   return (
     <Card className="h-full flex flex-col">
@@ -47,14 +51,39 @@ export function GoalCard({ goal, onShare, onView }: GoalCardProps) {
             <span>Due {format(new Date(goal.deadline), "PP")}</span>
           </div>
         )}
-        <div className="pt-2 flex gap-2">
+
+        {/* Timeline / View Bar */}
+        <div className="mt-1">
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+            <span>{startIso ? format(new Date(startIso), "MMM d") : "Start"}</span>
+            <span>{endIso ? format(new Date(endIso), "MMM d") : "End"}</span>
+          </div>
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="mt-1 text-[11px] text-muted-foreground">
+            {(() => {
+              if (!goal.deadline) return `${progress}% complete`;
+              const days = Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / (1000*60*60*24));
+              return `${progress}% complete • ${days >= 0 ? days + " days left" : Math.abs(days) + " days overdue"}`;
+            })()}
+          </div>
+        </div>
+
+        <div className="pt-2 flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={onShare}>
             <Share2 className="w-4 h-4 mr-1" /> Share
           </Button>
           {onView && (
             <Button variant="ghost" size="sm" onClick={onView}>
-              <ExternalLink className="w-4 h-4 mr-1" /> View details
+              <ExternalLink className="w-4 h-4 mr-1" /> View
             </Button>
+          )}
+          {onEdit && (
+            <Button variant="secondary" size="sm" onClick={onEdit}>Edit</Button>
+          )}
+          {onDelete && (
+            <Button variant="destructive" size="sm" onClick={onDelete}>Delete</Button>
           )}
         </div>
       </CardContent>

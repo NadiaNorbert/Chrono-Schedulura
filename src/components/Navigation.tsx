@@ -43,7 +43,7 @@ const Navigation = () => {
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
+      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border overflow-hidden">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-2">
@@ -55,7 +55,7 @@ const Navigation = () => {
               </span>
             </Link>
 
-            <div className="flex items-center space-x-1 flex-1 overflow-x-auto" role="navigation" aria-label="Primary">
+            <div className="flex items-center gap-1 flex-1 flex-wrap overflow-hidden" role="navigation" aria-label="Primary">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -63,10 +63,10 @@ const Navigation = () => {
                     <Button
                       variant={isActiveRoute(item.path) ? "default" : "ghost"}
                       size="sm"
-                      className="flex items-center space-x-2"
+                      className="flex items-center gap-2"
                     >
                       <Icon className="w-4 h-4" />
-                      <span className="hidden lg:inline">{item.label}</span>
+                      <span className="hidden xl:inline">{item.label}</span>
                     </Button>
                   </Link>
                 );

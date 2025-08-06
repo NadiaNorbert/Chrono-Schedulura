@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Share2, Link as LinkIcon, Clipboard, Check, Twitter, Linkedin, Mail, Shield } from "lucide-react";
 import { Goal } from "@/services/api";
 import { GoalMeta, setGoalMeta, getGoalMeta, pushRecentShare, getRecentShares, RecentShare } from "@/lib/goalMeta";
@@ -111,6 +111,17 @@ export function GoalShareDialog({ open, onOpenChange, goal }: GoalShareDialogPro
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
+  const openFacebook = () => {
+    if (!shareUrl) return;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` , "_blank");
+  };
+
+  const openWhatsApp = () => {
+    if (!shareUrl) return;
+    const text = encodeURIComponent(`My goal: ${goal.title} - ${shareUrl}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -159,10 +170,16 @@ export function GoalShareDialog({ open, onOpenChange, goal }: GoalShareDialogPro
                 <Share2 className="w-4 h-4 mr-1" /> Share via device
               </Button>
               <Button variant="outline" size="sm" onClick={openTwitter} disabled={!shareUrl}>
-                <Twitter className="w-4 h-4 mr-1" /> Twitter
+                <Twitter className="w-4 h-4 mr-1" /> Twitter/X
               </Button>
               <Button variant="outline" size="sm" onClick={openLinkedIn} disabled={!shareUrl}>
                 <Linkedin className="w-4 h-4 mr-1" /> LinkedIn
+              </Button>
+              <Button variant="outline" size="sm" onClick={openFacebook} disabled={!shareUrl}>
+                <Share2 className="w-4 h-4 mr-1" /> Facebook
+              </Button>
+              <Button variant="outline" size="sm" onClick={openWhatsApp} disabled={!shareUrl}>
+                <Share2 className="w-4 h-4 mr-1" /> WhatsApp
               </Button>
               <Button variant="outline" size="sm" onClick={openEmail} disabled={!shareUrl}>
                 <Mail className="w-4 h-4 mr-1" /> Email

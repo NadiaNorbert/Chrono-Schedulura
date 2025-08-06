@@ -63,6 +63,12 @@ export function GoalMiniBar({ goal }: { goal: Goal }) {
           })()}
         </div>
       )}
+      {/* Timeline bar */}
+      <div className="mt-1">
+        <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+          <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
     </div>
   );
 }

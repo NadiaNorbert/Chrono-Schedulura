@@ -2,6 +2,7 @@ export type GoalMeta = {
   category: string; // e.g., productivity, fitness, learning
   isPublic: boolean;
   passwordHash?: string; // sha-256 hex if protected
+  startDate?: string; // optional start date ISO string for timeline
 };
 
 const META_KEY = 'goal_meta_store_v1';
