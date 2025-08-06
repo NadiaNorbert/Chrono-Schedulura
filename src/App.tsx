@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import GoalsPage from "./pages/Goals";
 import GoalSharePreview from "./pages/GoalSharePreview";
+import GoalTrackerPage from "./pages/GoalTracker";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const AppRoutes = () => {
       <Route path="/scheduler" element={<SmartScheduler />} />
       <Route path="/calendar" element={<CalendarView />} />
       <Route path="/goals" element={<GoalsPage />} />
+      <Route path="/goal-tracker" element={<GoalTrackerPage />} />
       <Route path="/share/goal" element={<GoalSharePreview />} />
       <Route path="/reminders" element={<Reminders />} />
       <Route path="/wellness" element={<Wellness />} />

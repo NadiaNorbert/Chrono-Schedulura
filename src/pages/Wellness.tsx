@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,15 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Moon, 
-  Coffee, 
-  Clock, 
-  Brain, 
-  BookOpen, 
+import { useToast } from "@/hooks/use-toast";
+import { useApi, useMutation } from "@/hooks/useApi";
+import { apiClient, WellnessData } from "@/services/api";
+import {
+  Moon,
+  Coffee,
+  Clock,
+  Brain,
+  BookOpen,
   Flower2,
   Move,
   Heart,
@@ -20,6 +23,9 @@ import {
 } from "lucide-react";
 
 const Wellness = () => {
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const { toast } = useToast();
+  const { data, loading, error, refetch } = useApi<WellnessData[]>(() => apiClient.getWellnessData(today), [today]);
   const [sleepHours, setSleepHours] = useState([7.5]);
   const [breakTime, setBreakTime] = useState([45]);
   const [usageTime, setUsageTime] = useState([6]);
@@ -27,11 +33,38 @@ const Wellness = () => {
   const [journalEntry, setJournalEntry] = useState("");
   const [currentActivity, setCurrentActivity] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const w = data[0];
+      setSleepHours([w.sleep_duration]);
+      setBreakTime([w.break_duration]);
+      setUsageTime([w.usage_duration]);
+      setMentalHealth([w.mental_health_score]);
+    }
+  }, [data]);
+
+  const saveWellness = async () => {
+    const payload = {
+      sleep_duration: sleepHours[0],
+      break_duration: breakTime[0],
+      usage_duration: usageTime[0],
+      mental_health_score: mentalHealth[0],
+      date: today,
+    };
+    try {
+      await apiClient.updateWellnessData(payload);
+      toast({ title: "Wellness saved", description: "Your wellness data for today was updated." });
+      refetch();
+    } catch (e) {
+      toast({ title: "Failed to save", description: e instanceof Error ? e.message : "", variant: "destructive" as any });
+    }
+  };
+
   const wellnessMetrics = [
-    { label: "Sleep Quality", value: 85, color: "bg-wellness-mental", icon: Moon },
-    { label: "Break Frequency", value: 70, color: "bg-primary", icon: Coffee },
-    { label: "Mental Wellness", value: mentalHealth[0] * 10, color: "bg-secondary", icon: Brain },
-    { label: "Screen Balance", value: 100 - (usageTime[0] * 10), color: "bg-accent", icon: Clock },
+    { label: "Sleep Quality", value: Math.round((sleepHours[0] / 8) * 100), color: "bg-wellness-mental", icon: Moon },
+    { label: "Break Frequency", value: Math.min(100, Math.round((breakTime[0] / 60) * 100)), color: "bg-primary", icon: Coffee },
+    { label: "Mental Wellness", value: Math.min(100, mentalHealth[0] * 10), color: "bg-secondary", icon: Brain },
+    { label: "Screen Balance", value: Math.max(0, 100 - Math.round((usageTime[0] / 10) * 100)), color: "bg-accent", icon: Clock },
   ];
 
   const activities = [
@@ -52,9 +85,10 @@ const Wellness = () => {
       <Navigation />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Wellness & Break
           </h1>
+          {error && <div className="text-destructive text-sm mb-4">{error}</div>}
           
           {/* Wellness Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -172,9 +206,9 @@ const Wellness = () => {
                     onChange={(e) => setJournalEntry(e.target.value)}
                     className="min-h-[120px] mb-3"
                   />
-                  <Button size="sm" className="w-full">
+                  <Button size="sm" className="w-full" onClick={saveWellness} disabled={loading}>
                     <Plus className="w-4 h-4 mr-1" />
-                    Save Entry
+                    {loading ? "Saving…" : "Save Wellness"}
                   </Button>
                 </CardContent>
               </Card>

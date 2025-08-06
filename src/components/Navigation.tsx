@@ -28,6 +28,7 @@ const Navigation = () => {
     { path: "/scheduler", label: "Smart Scheduler", icon: Calendar },
     { path: "/calendar", label: "Calendar View", icon: Calendar },
     { path: "/goals", label: "Goals", icon: Target },
+    { path: "/goal-tracker", label: "Goal Tracker", icon: Target },
     { path: "/reminders", label: "Reminders", icon: Bell },
     { path: "/wellness", label: "Wellness & Break", icon: Heart },
     { path: "/health", label: "Health Companion", icon: Activity },
@@ -54,11 +55,11 @@ const Navigation = () => {
               </span>
             </Link>
 
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 flex-1 overflow-x-auto" role="navigation" aria-label="Primary">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link key={item.path} to={item.path}>
+                  <Link key={item.path} to={item.path} className="shrink-0">
                     <Button
                       variant={isActiveRoute(item.path) ? "default" : "ghost"}
                       size="sm"
@@ -72,7 +73,7 @@ const Navigation = () => {
               })}
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 shrink-0">
               <Badge variant="secondary" className="hidden lg:flex">
                 <Sparkles className="w-3 h-3 mr-1" />
                 AI Powered
@@ -85,6 +86,8 @@ const Navigation = () => {
                 size="sm"
                 onClick={logout}
                 className="flex items-center space-x-2"
+                aria-label="Logout"
+                title="Logout"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="hidden lg:inline">Logout</span>
