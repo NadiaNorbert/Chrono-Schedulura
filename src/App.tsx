@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 
 import GoalSharePreview from "./pages/GoalSharePreview";
 import GoalTrackerPage from "./pages/GoalTracker";
+import { FirebaseSetup } from "./components/FirebaseSetup";
 
 const queryClient = new QueryClient();
 
@@ -57,18 +58,27 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Check if Firebase is configured
+  const firebaseConfig = localStorage.getItem('firebaseConfig');
+  
+  if (!firebaseConfig) {
+    return <FirebaseSetup />;
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

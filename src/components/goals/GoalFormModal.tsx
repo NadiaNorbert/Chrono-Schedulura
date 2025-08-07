@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Goal, apiClient, Milestone } from "@/services/api";
+import { Goal, Milestone } from "@/services/api";
+import { useCreateGoal, useUpdateGoal } from "@/hooks/useFirebaseApi";
 import { getGoalMeta, setGoalMeta } from "@/lib/goalMeta";
 import { Plus, X } from "lucide-react";
 
@@ -31,6 +32,8 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
   const [endDate, setEndDate] = useState<string>("");
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [saving, setSaving] = useState(false);
+  const { mutate: createGoal } = useCreateGoal();
+  const { mutate: updateGoal } = useUpdateGoal();
 
   useEffect(() => {
     if (initial) {
@@ -64,20 +67,25 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
       const currentValue = Math.round((progressPct / 100) * targetValue);
 
       if (isEdit && initial) {
-        const { data } = await apiClient.updateGoal(initial.id, {
-          title,
-          description,
-          target_value: targetValue,
-          current_value: currentValue,
-          unit,
-          deadline: endDate || undefined,
-          milestones,
+        const result = await updateGoal({
+          goalId: initial.id,
+          updates: {
+            title,
+            description,
+            target_value: targetValue,
+            current_value: currentValue,
+            unit,
+            deadline: endDate || undefined,
+            milestones,
+          }
         });
-        setGoalMeta(data.id, { category, isPublic: true, startDate });
-        toast({ title: "Goal updated" });
-        onSaved?.(data);
+        if (result) {
+          setGoalMeta(result.id, { category, isPublic: true, startDate });
+          toast({ title: "Goal updated" });
+          onSaved?.(result);
+        }
       } else {
-        const { data } = await apiClient.createGoal({
+        const result = await createGoal({
           title,
           description,
           target_value: targetValue,
@@ -85,15 +93,17 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
           unit,
           deadline: endDate || undefined,
           milestones,
-          id: "" as any, user_id: "" as any, created_at: "" as any, updated_at: "" as any,
-        } as any);
-        setGoalMeta(data.id, { category, isPublic: true, startDate });
-        toast({ title: "Goal created" });
-        onSaved?.(data);
+          category
+        });
+        if (result) {
+          setGoalMeta(result.id, { category, isPublic: true, startDate });
+          toast({ title: "Goal created" });
+          onSaved?.(result);
+        }
       }
       onOpenChange(false);
     } catch (e) {
-      toast({ title: "Save failed", description: e instanceof Error ? e.message : "", variant: "destructive" as any });
+      toast({ title: "Save failed", description: e instanceof Error ? e.message : "", variant: "destructive" });
     } finally {
       setSaving(false);
     }

@@ -3,8 +3,14 @@ import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useApi } from "@/hooks/useApi";
-import { apiClient, Goal, UserScore } from "@/services/api";
+import { 
+  useGoals, 
+  useUserScore, 
+  useCreateGoal, 
+  useUpdateGoal, 
+  useDeleteGoal 
+} from "@/hooks/useFirebaseApi";
+import { Goal, UserScore } from "@/services/api";
 import { Plus, Target, BookOpen, Trophy, Share2, Trash2 } from "lucide-react";
 import GoalTrackingWidget from "@/components/widgets/GoalTrackingWidget";
 import { GoalMiniBar } from "@/components/goals/GoalMiniBar";
@@ -19,8 +25,10 @@ import { useToast } from "@/hooks/use-toast";
 import GoalSummarySection from "@/components/goals/GoalSummarySection";
 
 export default function GoalTrackerPage() {
-  const { data: goals, loading, error, refetch } = useApi<Goal[]>(() => apiClient.getGoals(), []);
-  const { data: userScore } = useApi<UserScore>(() => apiClient.getUserScore(), []);
+  const { data: goals, loading, error, refetch } = useGoals();
+  const { data: userScore } = useUserScore();
+  const { mutate: deleteGoalMutation } = useDeleteGoal();
+  const { mutate: updateGoalMutation } = useUpdateGoal();
   const [shareFor, setShareFor] = useState<Goal | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editFor, setEditFor] = useState<Goal | null>(null);
@@ -34,7 +42,7 @@ export default function GoalTrackerPage() {
     if (!confirm(`Are you sure you want to delete "${goal.title}"?`)) return;
     
     try {
-      await apiClient.deleteGoal(goal.id);
+      await deleteGoalMutation(goal.id);
       toast({ title: "Goal deleted successfully" });
       refetch();
     } catch (error) {
@@ -48,7 +56,7 @@ export default function GoalTrackerPage() {
 
   const handleGoalComplete = async (goal: Goal) => {
     try {
-      await apiClient.updateGoal(goal.id, { current_value: goal.target_value });
+      await updateGoalMutation({ goalId: goal.id, updates: { current_value: goal.target_value } });
       toast({ title: "🎉 Goal completed! Great job!" });
       refetch();
     } catch (error) {
