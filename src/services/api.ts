@@ -37,6 +37,13 @@ export interface Task {
   updated_at: string;
 }
 
+export interface Milestone {
+  id: string;
+  title: string;
+  completed: boolean;
+  order: number;
+}
+
 export interface Goal {
   id: string;
   title: string;
@@ -45,9 +52,27 @@ export interface Goal {
   current_value: number;
   unit: string;
   deadline?: string;
+  category?: string;
+  milestones?: Milestone[];
   user_id: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ScrapbookEntry {
+  id: string;
+  goal_id: string;
+  image_url?: string;
+  caption: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface UserScore {
+  total_points: number;
+  goals_completed: number;
+  milestones_completed: number;
+  goals_created: number;
 }
 
 export interface WellnessData {
@@ -181,6 +206,29 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
+  }
+
+  async deleteGoal(id: string): Promise<ApiResponse<null>> {
+    return this.request(`/goals/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Scrapbook endpoints
+  async getScrapbookEntries(goalId: string): Promise<ApiResponse<ScrapbookEntry[]>> {
+    return this.request(`/goals/${goalId}/scrapbook`);
+  }
+
+  async createScrapbookEntry(goalId: string, entry: Omit<ScrapbookEntry, 'id' | 'goal_id' | 'created_at'>): Promise<ApiResponse<ScrapbookEntry>> {
+    return this.request(`/goals/${goalId}/scrapbook`, {
+      method: 'POST',
+      body: JSON.stringify(entry),
+    });
+  }
+
+  // User score endpoints
+  async getUserScore(): Promise<ApiResponse<UserScore>> {
+    return this.request('/user/score');
   }
 
   // Wellness endpoints

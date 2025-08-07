@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Goal, apiClient } from "@/services/api";
+import { Goal, apiClient, Milestone } from "@/services/api";
 import { getGoalMeta, setGoalMeta } from "@/lib/goalMeta";
+import { Plus, X } from "lucide-react";
 
 interface GoalFormModalProps {
   open: boolean;
@@ -27,6 +29,7 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
   const [unit, setUnit] = useState("%");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
       setStartDate(meta?.startDate || initial.created_at);
       const pct = initial.target_value ? Math.round((initial.current_value / initial.target_value) * 100) : 0;
       setProgressPct(Math.max(0, Math.min(100, pct)));
+      setMilestones(initial.milestones || []);
     } else {
       setTitle("");
       setDescription("");
@@ -50,6 +54,7 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
       setUnit("%");
       setStartDate(new Date().toISOString().slice(0,10));
       setEndDate("");
+      setMilestones([]);
     }
   }, [initial, open]);
 
@@ -66,6 +71,7 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
           current_value: currentValue,
           unit,
           deadline: endDate || undefined,
+          milestones,
         });
         setGoalMeta(data.id, { category, isPublic: true, startDate });
         toast({ title: "Goal updated" });
@@ -78,6 +84,7 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
           current_value: currentValue,
           unit,
           deadline: endDate || undefined,
+          milestones,
           id: "" as any, user_id: "" as any, created_at: "" as any, updated_at: "" as any,
         } as any);
         setGoalMeta(data.id, { category, isPublic: true, startDate });
@@ -137,8 +144,63 @@ export default function GoalFormModal({ open, onOpenChange, initial, onSaved }: 
               <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
+
+          <Separator />
+
+          {/* Milestones Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">Milestones / Sub-tasks</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setMilestones(prev => [...prev, { 
+                  id: Date.now().toString(), 
+                  title: "", 
+                  completed: false, 
+                  order: prev.length 
+                }])}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Milestone
+              </Button>
+            </div>
+            
+            {milestones.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Break down your goal into smaller, manageable steps
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {milestones.map((milestone, index) => (
+                  <div key={milestone.id} className="flex items-center gap-2">
+                    <Input
+                      placeholder={`Milestone ${index + 1}`}
+                      value={milestone.title}
+                      onChange={(e) => setMilestones(prev => 
+                        prev.map(m => m.id === milestone.id ? { ...m, title: e.target.value } : m)
+                      )}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setMilestones(prev => prev.filter(m => m.id !== milestone.id))}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="pt-2">
-            <Button onClick={onSubmit} disabled={saving || !title} className="w-full">{saving ? "Saving..." : (isEdit ? "Save Changes" : "Create Goal")}</Button>
+            <Button onClick={onSubmit} disabled={saving || !title} className="w-full">
+              {saving ? "Saving..." : (isEdit ? "Save Changes" : "Create Goal")}
+            </Button>
           </div>
         </div>
       </DialogContent>
