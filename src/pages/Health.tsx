@@ -6,6 +6,10 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TimerModal } from "@/components/TimerModal";
+import { AddWorkoutDialog } from "@/components/AddWorkoutDialog";
+import { AddSelfCareDialog } from "@/components/AddSelfCareDialog";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Droplets, 
   Calculator, 
@@ -17,18 +21,97 @@ import {
   Heart,
   Plus,
   Minus,
-  Target
+  Target,
+  Trash2,
+  Play
 } from "lucide-react";
 
 const Health = () => {
+  const { toast } = useToast();
   const [hydrationGoal] = useState(2500);
   const [hydrationCurrent, setHydrationCurrent] = useState(1200);
   const [calories, setCalories] = useState({ consumed: 1850, target: 2200 });
   const [steps, setSteps] = useState(8247);
   const [workoutMinutes, setWorkoutMinutes] = useState(45);
   
+  // Timer state
+  const [timerOpen, setTimerOpen] = useState(false);
+  const [currentWorkout, setCurrentWorkout] = useState<{ name: string; duration: number } | null>(null);
+  
+  // Editable workout plans
+  const [workoutPlans, setWorkoutPlans] = useState([
+    { name: "Morning Cardio", duration: "30 min", intensity: "Medium", type: "Cardio" },
+    { name: "Strength Training", duration: "45 min", intensity: "High", type: "Strength" },
+    { name: "Yoga Flow", duration: "20 min", intensity: "Low", type: "Flexibility" },
+    { name: "HIIT Session", duration: "25 min", intensity: "High", type: "HIIT" },
+  ]);
+  
+  // Editable self-care routine
+  const [skinCareRoutine, setSkinCareRoutine] = useState([
+    { step: "Cleanser", time: "Morning", completed: true },
+    { step: "Moisturizer", time: "Morning", completed: true },
+    { step: "Sunscreen", time: "Morning", completed: false },
+    { step: "Cleanser", time: "Evening", completed: false },
+    { step: "Serum", time: "Evening", completed: false },
+    { step: "Night Cream", time: "Evening", completed: false },
+  ]);
+  
   const addHydration = (amount: number) => {
     setHydrationCurrent(prev => Math.min(prev + amount, hydrationGoal));
+  };
+
+  const addWorkout = (workout: { name: string; duration: string; intensity: string; type: string }) => {
+    setWorkoutPlans(prev => [...prev, workout]);
+    toast({
+      title: "Workout Added",
+      description: `${workout.name} has been added to your plan.`,
+    });
+  };
+
+  const removeWorkout = (index: number) => {
+    setWorkoutPlans(prev => prev.filter((_, i) => i !== index));
+    toast({
+      title: "Workout Removed",
+      description: "Workout has been removed from your plan.",
+    });
+  };
+
+  const startWorkout = (workout: { name: string; duration: string }) => {
+    const durationMinutes = parseInt(workout.duration.replace(/\D/g, ''));
+    setCurrentWorkout({ name: workout.name, duration: durationMinutes });
+    setTimerOpen(true);
+  };
+
+  const completeWorkout = () => {
+    if (currentWorkout) {
+      toast({
+        title: "Workout Completed! 🎉",
+        description: `Great job finishing ${currentWorkout.name}!`,
+      });
+      setWorkoutMinutes(prev => prev + currentWorkout.duration);
+    }
+    setTimerOpen(false);
+    setCurrentWorkout(null);
+  };
+
+  const addSelfCareItem = (item: { step: string; time: string; completed: boolean }) => {
+    setSkinCareRoutine(prev => [...prev, item]);
+    toast({
+      title: "Self-Care Step Added",
+      description: `${item.step} has been added to your routine.`,
+    });
+  };
+
+  const removeSelfCareItem = (index: number) => {
+    setSkinCareRoutine(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleSelfCareCompletion = (index: number) => {
+    setSkinCareRoutine(prev => 
+      prev.map((item, i) => 
+        i === index ? { ...item, completed: !item.completed } : item
+      )
+    );
   };
 
   const healthMetrics = [
@@ -64,22 +147,6 @@ const Health = () => {
       icon: Dumbbell,
       color: "bg-purple-500"
     },
-  ];
-
-  const workoutPlans = [
-    { name: "Morning Cardio", duration: "30 min", intensity: "Medium", type: "Cardio" },
-    { name: "Strength Training", duration: "45 min", intensity: "High", type: "Strength" },
-    { name: "Yoga Flow", duration: "20 min", intensity: "Low", type: "Flexibility" },
-    { name: "HIIT Session", duration: "25 min", intensity: "High", type: "HIIT" },
-  ];
-
-  const skinCareRoutine = [
-    { step: "Cleanser", time: "Morning", completed: true },
-    { step: "Moisturizer", time: "Morning", completed: true },
-    { step: "Sunscreen", time: "Morning", completed: false },
-    { step: "Cleanser", time: "Evening", completed: false },
-    { step: "Serum", time: "Evening", completed: false },
-    { step: "Night Cream", time: "Evening", completed: false },
   ];
 
   return (
@@ -295,17 +362,18 @@ const Health = () => {
             {/* Workout Tab */}
             <TabsContent value="workout" className="mt-6">
               <Card>
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <CardTitle className="text-lg flex items-center space-x-2">
                     <Dumbbell className="w-5 h-5" />
                     <span>Workout Planner</span>
                   </CardTitle>
+                  <AddWorkoutDialog onAddWorkout={addWorkout} />
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {workoutPlans.map((workout, index) => (
                       <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-card to-muted/20">
-                        <div>
+                        <div className="flex-1">
                           <h3 className="font-semibold text-sm">{workout.name}</h3>
                           <p className="text-xs text-muted-foreground">{workout.duration} • {workout.type}</p>
                           <Badge 
@@ -319,11 +387,30 @@ const Health = () => {
                             {workout.intensity}
                           </Badge>
                         </div>
-                        <Button size="sm" variant="outline">
-                          Start
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => startWorkout(workout)}
+                          >
+                            <Play className="w-4 h-4 mr-1" />
+                            Start
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => removeWorkout(index)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
+                    {workoutPlans.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No workouts planned. Add your first workout above!
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -333,26 +420,46 @@ const Health = () => {
             <TabsContent value="care" className="mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-3 flex flex-row items-center justify-between">
                     <CardTitle className="text-lg flex items-center space-x-2">
                       <Sparkles className="w-5 h-5" />
                       <span>Skin Care Routine</span>
                     </CardTitle>
+                    <AddSelfCareDialog onAddItem={addSelfCareItem} />
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       {skinCareRoutine.map((item, index) => (
                         <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-4 h-4 rounded-full border-2 ${item.completed ? 'bg-primary border-primary' : 'border-muted-foreground'}`} />
+                            <button
+                              onClick={() => toggleSelfCareCompletion(index)}
+                              className={`w-4 h-4 rounded-full border-2 cursor-pointer transition-colors ${
+                                item.completed ? 'bg-primary border-primary' : 'border-muted-foreground hover:border-primary'
+                              }`} 
+                            />
                             <div>
                               <span className="text-sm font-medium">{item.step}</span>
                               <div className="text-xs text-muted-foreground">{item.time}</div>
                             </div>
                           </div>
-                          {item.completed && <Badge variant="secondary">Done</Badge>}
+                          <div className="flex items-center gap-2">
+                            {item.completed && <Badge variant="secondary">Done</Badge>}
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => removeSelfCareItem(index)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
+                      {skinCareRoutine.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No self-care steps added. Add your first step above!
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -386,6 +493,17 @@ const Health = () => {
           </Tabs>
         </div>
       </div>
+      
+      {/* Timer Modal */}
+      {currentWorkout && (
+        <TimerModal
+          isOpen={timerOpen}
+          onClose={() => setTimerOpen(false)}
+          workoutName={currentWorkout.name}
+          duration={currentWorkout.duration}
+          onComplete={completeWorkout}
+        />
+      )}
     </div>
   );
 };
